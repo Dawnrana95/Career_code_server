@@ -25,24 +25,45 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         const database = client.db('newDatabase').collection('data')
+        const applicationCullaction = client.db('newDatabase').collection('application')
 
-        app.get('/data', async(req, res)=>{
+
+        // database
+        app.get('/data', async (req, res) => {
             const result = await database.find().toArray()
             res.send(result)
         })
-        app.get('/data/:id',async(req, res)=>{
+        app.get('/data/:id', async (req, res) => {
             const id = req.params.id;
-            const quary = {_id: new ObjectId(id)};
-            const result =await database.findOne(quary);
+            const quary = { _id: new ObjectId(id) };
+            const result = await database.findOne(quary);
             res.send(result)
         })
 
 
+        // applicationCullactio
+        app.post('/applcation', async (req, res) => {
+            const applications = req.body;
+            const result = await applicationCullaction.insertOne(applications)
+            res.send(result)
+
+        })
+        app.get('/applcation', async (req, res) => {
+            const email = req.query.email;
+
+            const quary =
+            {
+                UserEmail: email
+            }
+
+            const result = await applicationCullaction.find(quary).toArray()
+            res.send(result)
+
+        })
 
 
 
-
-        await client.connect();
+        // await client.connect();
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
