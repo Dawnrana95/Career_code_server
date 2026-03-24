@@ -30,9 +30,17 @@ async function run() {
 
         // database
         app.get('/data', async (req, res) => {
-            const result = await database.find().toArray()
+            const email = req.query.email;
+            // console.log(email);
+            const quary = {};
+            if(email){
+                quary.hr_email = email;
+            }
+
+            const result = await database.find(quary).toArray()
             res.send(result)
         })
+
         app.get('/data/:id', async (req, res) => {
             const id = req.params.id;
             const quary = { _id: new ObjectId(id) };
@@ -40,25 +48,28 @@ async function run() {
             res.send(result)
         })
 
+        app.post('/data', async(req, res) =>{
+            const newData = req.body;
+            const result = await database.insertOne(newData);
+            res.send(result)
+        })
+
 
         // applicationCullactio
-        app.post('/applcation', async (req, res) => {
+        app.post('/application', async (req, res) => {
             const applications = req.body;
             const result = await applicationCullaction.insertOne(applications)
             res.send(result)
-
         })
-        app.get('/applcation', async (req, res) => {
-            const email = req.query.email;
 
-            const quary =
-            {
-                UserEmail: email
-            }
+        app.get('/application', async (req, res) => {
+            const email = req.query.email;
+            // console.log(email);
+
+            const quary = { UserEmail: email }
 
             const result = await applicationCullaction.find(quary).toArray()
             res.send(result)
-
         })
 
 
