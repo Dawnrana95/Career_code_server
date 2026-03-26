@@ -1,5 +1,6 @@
 const express = require('express')
 const cors = require('cors')
+const jwt = require('jsonwebtoken');
 const app = express()
 const port = 3000
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -27,12 +28,20 @@ async function run() {
         const database = client.db('newDatabase').collection('data')
         const applicationCullaction = client.db('newDatabase').collection('application')
 
+        // jwt relatad Api
+        app.post('/jwt',async(req, res) => {
+            const {email} = req.body;
+            const user = {email}
+            const token = jwt.sign(user, 'secret', {expiresIn : '1h'});
+            res.send({token})
+        })
+
 
         // database
         app.get('/data', async (req, res) => {
             const email = req.query.email;
-            // console.log(email);
             const quary = {};
+
             if(email){
                 quary.hr_email = email;
             }
@@ -56,6 +65,13 @@ async function run() {
 
 
         // applicationCullactio
+        app.get('/application/job/:_id', async(req ,res) => {
+            const _id = req.params._id;
+            const quary = {id : _id}
+            const result = await applicationCullaction.find(quary).toArray()
+            res.send(result)
+        })
+
         app.post('/application', async (req, res) => {
             const applications = req.body;
             const result = await applicationCullaction.insertOne(applications)
@@ -71,8 +87,6 @@ async function run() {
             const result = await applicationCullaction.find(quary).toArray()
             res.send(result)
         })
-
-
 
         // await client.connect();
         await client.db("admin").command({ ping: 1 });
