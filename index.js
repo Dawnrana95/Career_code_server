@@ -1,14 +1,34 @@
 const express = require('express')
 const cors = require('cors')
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser')
 const app = express()
 const port = 3000
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 
 // Middle wair
-app.use(cors())
+app.use(cors({
+    origin : ['http://localhost:5173'],
+    credentials: true
+}))
 app.use(express.json())
+app.use(cookieParser())
+
+
+const verifyToken = (req, res, next) => {
+    const token = req?.cookies?.token;
+
+    if(!token){
+        return res.statas(404).send({massage: 'Page Node found'})
+    }
+    jwt.verify(token,process.env.JWT_SECRET,async(err, decoded)=>{
+        if(err){return res.statas(401).send({massage: 'You are a Bot Fuck You'})}
+        req.decoded = decoded
+        next()
+    })
+}
+
 
 
 
@@ -29,12 +49,19 @@ async function run() {
         const applicationCullaction = client.db('newDatabase').collection('application')
 
         // jwt relatad Api
-        app.post('/jwt',async(req, res) => {
-            const {email} = req.body;
-            const user = {email}
-            const token = jwt.sign(user, 'secret', {expiresIn : '1h'});
-            res.send({token})
+       app.post('/jwt',async(req, res) => {
+        const {UserEmail} = req.body;
+        console.log(UserEmail);
+        
+        const token =jwt.sign({UserEmail},process.env.JWT_SECRET,{expiresIn: '1d'})
+        res.cookie('token',token,{
+            httpOnly: true,
+            secure: false
         })
+
+        res.send({success: true})
+       })
+       
 
 
         // database
@@ -78,10 +105,9 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/application', async (req, res) => {
+        app.get('/application',verifyToken, async (req, res) => {
             const email = req.query.email;
-            // console.log(email);
-
+            
             const quary = { UserEmail: email }
 
             const result = await applicationCullaction.find(quary).toArray()
