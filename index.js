@@ -9,7 +9,7 @@ require('dotenv').config()
 
 // Middle wair
 app.use(cors({
-    origin : ['http://localhost:5173'],
+    origin : ['https://carear-code-40fe1.web.app'],
     credentials: true
 }))
 app.use(express.json())
@@ -20,10 +20,10 @@ const verifyToken = (req, res, next) => {
     const token = req?.cookies?.token;
 
     if(!token){
-        return res.statas(404).send({massage: 'Page Node found'})
+        return res.status(404).send({massage: 'Page Node found'})
     }
     jwt.verify(token,process.env.JWT_SECRET,async(err, decoded)=>{
-        if(err){return res.statas(401).send({massage: 'You are a Bot Fuck You'})}
+        if(err){return res.status(401).send({massage: 'You are a Bot Fuck You'})}
         req.decoded = decoded
         next()
     })
@@ -115,8 +115,8 @@ async function run() {
         })
 
         // await client.connect();
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+        // await client.db("admin").command({ ping: 1 });
+        // console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
         // await client.close();
